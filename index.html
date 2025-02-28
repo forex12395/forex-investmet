@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forex Real Account</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Forex Real Account</h1>
+        </header>
+        <main id="authSection">
+            <section id="signup">
+                <h2>Sign Up</h2>
+                <form id="signupForm">
+                    <input type="text" id="signupPhoneNumber" placeholder="Phone Number" required>
+                    <input type="password" id="signupPassword" placeholder="Password" required>
+                    <button type="submit">Sign Up</button>
+                </form>
+            </section>
+            <section id="login">
+                <h2>Log In</h2>
+                <form id="loginForm">
+                    <input type="text" id="loginPhoneNumber" placeholder="Phone Number" required>
+                    <input type="password" id="loginPassword" placeholder="Password" required>
+                    <button type="submit">Log In</button>
+                </form>
+            </section>
+        </main>
+        <main id="mainSection" style="display: none;">
+            <nav>
+                <ul>
+                    <li><a href="#">Home</a></li>
+                    <li><a href="#">Invest</a></li>
+                    <li><a href="#">Deposit</a></li>
+                    <li><a href="#">Withdraw</a></li>
+                    <li><a href="#">Contact</a></li>
+                </ul>
+            </nav>
+            <section id="wallet">
+                <h2>Wallet</h2>
+                <p>Balance: <span id="balance">0</span> KSH</p>
+            </section>
+            <section id="invest">
+                <h2>Invest</h2>
+                <form id="investForm">
+                    <input type="number" id="investAmount" placeholder="Amount to Invest (min 500 KSH)" required>
+                    <button type="submit">Invest</button>
+                </form>
+                <p class="notice">Once you invest, remember to select the Forex AI Robot to trade for you to maximize profits.</p>
+                <p class="notice">If you don't have currency to trade, you can use the demo account to learn more.</p>
+            </section>
+            <section id="forexAI">
+                <h2>Forex Trading AI Robots</h2>
+                <form id="forexAIForm" style="display: none;">
+                    <label for="aiStrategy">Select AI Strategy:</label>
+                    <select id="aiStrategy" required>
+                        <option value="conservative">Conservative</option>
+                        <option value="balanced">Balanced</option>
+                        <option value="aggressive">Aggressive</option>
+                    </select>
+                    <button type="submit">Activate AI</button>
+                </form>
+            </section>
+            <section id="forexGraph">
+                <h2>Forex Trading Market Trends</h2>
+                <canvas id="forexChart" width="400" height="200"></canvas>
+            </section>
+            <section id="deposit">
+                <h2>Deposit</h2>
+                <p>Deposit to Number: <strong>12345</strong></p>
+                <form id="depositForm">
+                    <input type="number" id="depositAmount" placeholder="Amount to Deposit (min 500 KSH)" required>
+                    <input type="text" id="phoneNumber" placeholder="Phone Number 12345" required>
+                    <button type="submit">Deposit</button>
+                </form>
+            </section>
+            <section id="withdraw">
+                <h2>Withdraw</h2>
+                <form id="withdrawForm">
+                    <input type="number" id="withdrawAmount" placeholder="Amount to Withdraw (min 200 KSH)" required>
+                    <button type="submit">Withdraw</button>
+                </form>
+            </section>
+            <section id="demoAccount">
+                <h2>Demo Account</h2>
+                <p>Balance: <span id="demoBalance">10000</span> KSH</p>
+                <form id="demoInvestForm">
+                    <input type="number" id="demoInvestAmount" placeholder="Amount to Invest (min 500 KSH)" required>
+                    <button type="submit">Invest</button>
+                </form>
+                <p class="notice">Use the demo account to practice trading without real money.</p>
+                <canvas id="demoChart" width="400" height="200"></canvas>
+                <canvas id="liveDemoChart" width="400" height="200"></canvas>
+            </section>
+        </main>
+        <main id="adminSection" style="display: none;">
+            <h2>Admin Dashboard</h2>
+            <section id="accounts">
+                <h3>Accounts</h3>
+                <ul id="accountsList"></ul>
+            </section>
+            <section id="deposits">
+                <h3>Deposits</h3>
+                <ul id="depositsList"></ul>
+            </section>
+            <section id="withdrawals">
+                <h3>Withdrawals</h3>
+                <ul id="withdrawalsList"></ul>
+            </section>
+        </main>
+        <footer>
+            <p>&copy; 2025 Forex Real Account. All rights reserved.</p>
+        </footer>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-financial"></script>
+    <script>
+        let registeredPhoneNumber = '';
+        let registeredPassword = '';
+        let balance = 0;
+        let demoBalance = 10000;
+        let firstDeposit = true;
+        let profitEarned = 0; // Track profit earned
+        let accounts = [];
+        let deposits = [];
+        let withdrawals = [];
+
+        document.getElementById('signupForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            registeredPhoneNumber = document.getElementById('signupPhoneNumber').value;
+            registeredPassword = document.getElementById('signupPassword').value;
+            accounts.push({ phoneNumber: registeredPhoneNumber, password: registeredPassword, balance: 0 });
+            updateAdminDashboard();
+            alert('Sign Up successful!');
+            document.getElementById('authSection').style.display = 'none';
+            document.getElementById('mainSection').style.display = 'block';
+            document.getElementById('forexGraph').style.display = 'block';
+        });
+
+        document.getElementById('loginForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const phoneNumber = document.getElementById('loginPhoneNumber').value;
+            const password = document.getElementById('loginPassword').value;
+            if (phoneNumber === registeredPhoneNumber && password === registeredPassword) {
+                alert('Log In successful!');
+                document.getElementById('authSection').style.display = 'none';
+                document.getElementById('mainSection').style.display = 'block';
+                document.getElementById('forexGraph').style.display = 'block';
+            } else {
+                alert('Invalid phone number or password!');
+            }
+        });
+
+        document.getElementById('investForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const amount = parseFloat(document.getElementById('investAmount').value);
+            if (amount >= 500) {
+                if (balance >= 500) {
+                    alert('Investment successful!');
+                    document.getElementById('forexAIForm').style.display = 'block';
+                    balance -= amount;
+                    document.getElementById('balance').textContent = balance;
+                } else {
+                    alert('Insufficient balance! Please deposit at least 500 KSH.');
+                    document.getElementById('depositForm').scrollIntoView();
+                }
+            } else {
+                alert('Minimum investment amount is 500 KSH.');
+            }
+        });
+
+        document.getElementById('depositForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const amount = parseFloat(document.getElementById('depositAmount').value);
+            const phoneNumber = document.getElementById('phoneNumber').value;
+            if (amount >= 500) {
+                balance += amount;
+                deposits.push({ phoneNumber, amount });
+                updateAdminDashboard();
+                document.getElementById('balance').textContent = balance;
+                // Simulate deposit process
+                setTimeout(() => {
+                    alert(`Deposit of ${amount} KSH successful to phone number ${phoneNumber}!`);
+                    if (firstDeposit) {
+                        firstDeposit = false;
+                        let profitInterval = setInterval(() => {
+                            const profit = amount * 0.05;
+                            balance += profit;
+                            profitEarned += profit;
+                            document.getElementById('balance').textContent = balance;
+                            alert(`You earned a profit of ${profit} KSH!`);
+                        }, 120000); // Increase balance by 5% every 2 minutes
+
+                        setTimeout(() => {
+                            clearInterval(profitInterval);
+                            setInterval(() => {
+                                const loss = profitEarned * 0.3;
+                                balance -= loss;
+                                document.getElementById('balance').textContent = balance;
+                                alert(`You incurred a loss of ${loss} KSH!`);
+                            }, 1080000); // Decrease balance by 30% of profit earned every 18 minutes
+                        }, 600000); // Start losses after 10 minutes
+                    }
+                }, 2000); // Simulate delay for deposit process
+            } else {
+                alert('Minimum deposit amount is 500 KSH.');
+            }
+        });
+
+        document.getElementById('withdrawForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const amount = parseFloat(document.getElementById('withdrawAmount').value);
+            if (amount >= 200 && amount <= balance) {
+                balance -= amount;
+                withdrawals.push({ phoneNumber: registeredPhoneNumber, amount });
+                updateAdminDashboard();
+                document.getElementById('balance').textContent = balance;
+                alert('Withdrawal successful!');
+            } else if (amount < 200) {
+                alert('Minimum withdrawal amount is 200 KSH.');
+            } else {
+                alert('Insufficient balance!');
+            }
+        });
+
+        document.getElementById('forexAIForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const strategy = document.getElementById('aiStrategy').value;
+            alert(`Forex Trading AI Robot activated with ${strategy} strategy!`);
+        });
+
+        const demoCtx = document.getElementById('demoChart').getContext('2d');
+        const demoChart = new Chart(demoCtx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Demo Account Balance',
+                    data: [],
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1,
+                    fill: false
+                }]
+            },
+            options: {
+                scales: {
+                    x: {
+                        beginAtZero: true
+                    },
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        document.getElementById('demoInvestForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const amount = parseFloat(document.getElementById('demoInvestAmount').value);
+            if (amount >= 500) {
+                if (demoBalance >= 500) {
+                    alert('Demo investment successful!');
+                    demoBalance -= amount;
+                    document.getElementById('demoBalance').textContent = demoBalance;
+                    demoChart.data.labels.push(new Date().toLocaleTimeString());
+                    demoChart.data.datasets[0].data.push(demoBalance);
+                    demoChart.update();
+                    setInterval(() => {
+                        const profit = amount * 0.1;
+                        demoBalance += profit;
+                        document.getElementById('demoBalance').textContent = demoBalance;
+                        demoChart.data.labels.push(new Date().toLocaleTimeString());
+                        demoChart.data.datasets[0].data.push(demoBalance);
+                        demoChart.update();
+                        alert(`You earned a profit of ${profit} KSH!`);
+                    }, 60000); // Increase balance by 10% every 1 minute
+                } else {
+                    alert('Insufficient demo balance!');
+                }
+            } else {
+                alert('Minimum demo investment amount is 500 KSH.');
+            }
+        });
+
+        const ctx = document.getElementById('forexChart').getContext('2d');
+        const forexChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Forex Market Trends',
+                    data: [],
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1,
+                    fill: false
+                }]
+            },
+            options: {
+                scales: {
+                    x: {
+                        beginAtZero: true
+                    },
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        function updateChart() {
+            const now = new Date();
+            const time = `${now.getHours()}:${now.getMinutes()}:${now.getSeconds()}`;
+            const value = Math.floor(Math.random() * 100);
+
+            if (forexChart.data.labels.length > 20) {
+                forexChart.data.labels.shift();
+                forexChart.data.datasets[0].data.shift();
+            }
+
+            forexChart.data.labels.push(time);
+            forexChart.data.datasets[0].data.push(value);
+            forexChart.update();
+        }
+
+        setInterval(updateChart, 1000); // Update every 1 second
+
+        function updateAdminDashboard() {
+            const accountsList = document.getElementById('accountsList');
+            const depositsList = document.getElementById('depositsList');
+            const withdrawalsList = document.getElementById('withdrawalsList');
+
+            accountsList.innerHTML = '';
+            depositsList.innerHTML = '';
+            withdrawalsList.innerHTML = '';
+
+            accounts.forEach(account => {
+                const li = document.createElement('li');
+                li.textContent = `Phone: ${account.phoneNumber}, Balance: ${account.balance} KSH`;
+                accountsList.appendChild(li);
+            });
+
+            deposits.forEach(deposit => {
+                const li = document.createElement('li');
+                li.textContent = `Phone: ${deposit.phoneNumber}, Amount: ${deposit.amount} KSH`;
+                depositsList.appendChild(li);
+            });
+
+            withdrawals.forEach(withdrawal => {
+                const li = document.createElement('li');
+                li.textContent = `Phone: ${withdrawal.phoneNumber}, Amount: ${withdrawal.amount} KSH`;
+                withdrawalsList.appendChild(li);
+            });
+        }
+
+        const liveDemoCtx = document.getElementById('liveDemoChart').getContext('2d');
+        const liveDemoChart = new Chart(liveDemoCtx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Live Currency Value',
+                    data: [],
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    borderWidth: 1,
+                    fill: false
+                }]
+            },
+            options: {
+                scales: {
+                    x: {
+                        beginAtZero: true
+                    },
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        function updateLiveDemoChart() {
+            const now = new Date();
+            const time = `${now.getHours()}:${now.getMinutes()}:${now.getSeconds()}`;
+            const value = Math.random() * 100;
+
+            if (liveDemoChart.data.labels.length > 20) {
+                liveDemoChart.data.labels.shift();
+                liveDemoChart.data.datasets[0].data.shift();
+            }
+
+            liveDemoChart.data.labels.push(time);
+            liveDemoChart.data.datasets[0].data.push(value);
+            liveDemoChart.update();
+        }
+
+        setInterval(updateLiveDemoChart, 1000); // Update every 1 second
+    </script>
+</body>
+</html>
